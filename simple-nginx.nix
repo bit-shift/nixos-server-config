@@ -158,7 +158,7 @@ in rec {
     extraHostnames = extraHostnames;
     nginxBaseConf = let code = if perm then 301 else 302;
                     in ''
-                         return ${code} ${redirectTo};
+                         return ${toString code} ${redirectTo};
                        '';
   };
 
