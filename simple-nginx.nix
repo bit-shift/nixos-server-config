@@ -31,7 +31,7 @@ in rec {
   fastcgiParams = fcgiParams;
 
   serveSites = sites :
-    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], ... } :
+    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], redirect ? null, ... } :
         let serverNames = lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
             mainPort = if ssl == null
                           then "80"
@@ -74,23 +74,23 @@ in rec {
                                ''
                           else "";
         in ''
-	  ${sslRedirect}
-
-          server {
-            ${sslConfig}
-
-            listen ${mainPort}${portAnnot};
-            server_name ${serverNames};
-            root /srv/www/${if hostname == "_" then "default" else hostname};
-            index ${if usePhp then "index.php " else ""}index.html index.htm;
+             ${sslRedirect}
+             
+             server {
+               ${sslConfig}
             
-            ${lib.concatMapStrings mkIndexRule indexedLocs}
-            
-            ${phpBlock}
-
-            ${nginxBaseConf}
-          }
-        '';
+               listen ${mainPort}${portAnnot};
+               server_name ${serverNames};
+               root /srv/www/${if hostname == "_" then "default" else hostname};
+               index ${if usePhp then "index.php " else ""}index.html index.htm;
+               
+               ${lib.concatMapStrings mkIndexRule indexedLocs}
+               
+               ${phpBlock}
+           
+               ${nginxBaseConf}
+             }
+           '';
     in {
       services.nginx = {
         enable = true;
@@ -137,11 +137,19 @@ in rec {
       '';
     };
 
-  # site types - for now one, later maybe more
+  # site types
   basicSite = hostname : extraHostnames : extraConf : {
     hostname = hostname;
     extraHostnames = extraHostnames;
     nginxBaseConf = extraConf;
+  };
+  redirect = hostname : extraHostnames : perm : redirectTo : {
+    hostname = hostname;
+    extraHostnames = extraHostnames;
+    nginxBaseConf = let code = if perm then 301 else 302;
+                    in ''
+                         return ${code} ${redirectTo};
+                       '';
   };
 
   # modifiers - possible todo: inverse operations
