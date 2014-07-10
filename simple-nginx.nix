@@ -140,7 +140,7 @@ in rec {
                               then let serverNames = lib.concatMap (s : lib.singleton s.hostname ++ s.extraHostnames) sites;
                                    in lib.concatMapStrings (servName: ''
                                         127.0.0.1	${servName}
-                                      '') sites
+                                      '') serverNames
                               else "";
     };
 
