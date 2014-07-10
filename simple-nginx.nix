@@ -31,7 +31,7 @@ in rec {
   fastcgiParams = fcgiParams;
 
   serveSites = sites :
-    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [] ... } :
+    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], ... } :
         let serverNames = lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
             mainPort = if ssl == null
                           then "80"
