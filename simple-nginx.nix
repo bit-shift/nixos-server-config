@@ -31,7 +31,7 @@ in rec {
   fastcgiParams = fcgiParams;
 
   serveSites = addHosts : sites :
-    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], redirect ? null, ... } :
+    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], redirect ? null, path ? "", ... } :
         let serverNames = lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
             mainPort = if ssl == null
                           then "80"
@@ -54,6 +54,9 @@ in rec {
                                   ssl_certificate ${ssl.cert};
                                   ssl_certificate_key ${ssl.key};
                                 '';
+            sitePath = if path == ""
+                          then (if hostname == "_" then "default" else hostname)
+                          else path;
             mkIndexRule = loc : ''
                                   location ${loc} {
                                     autoindex on;
@@ -81,7 +84,7 @@ in rec {
             
                listen ${mainPort}${portAnnot};
                server_name ${serverNames};
-               root /srv/www/${if hostname == "_" then "default" else hostname};
+               root /srv/www/${sitePath};
                index ${if usePhp then "index.php " else ""}index.html index.htm;
                
                ${lib.concatMapStrings mkIndexRule indexedLocs}
@@ -163,6 +166,9 @@ in rec {
   };
 
   # modifiers - possible todo: inverse operations
+  withPath = path : site : site // {
+    path = path;
+  }
   withPhp = site : site // {
     usePhp = true;
   };
