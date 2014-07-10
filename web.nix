@@ -26,7 +26,15 @@ serveSites true
 
              ### identicurse.net
 
-             (withPhp (basicSite "pxl.psquid.net" [] ""))
+             (withPhp (basicSite "pxl.psquid.net" [] ''
+               location = /favicon.ico {}
+               location = /pxl.min.js {}
+               location = /robots.txt {}
+               
+               location / {
+                 rewrite ^/(.*)$ /log.php?u=$1 last;
+               }
+             ''))
              (withSsl "/srv/www/ssl/owncloud.crt" "/srv/www/ssl/owncloud.key"
                (withCustomPhp (basicSite "cloud.psquid.net" [] ''
                  client_max_body_size 10G;
