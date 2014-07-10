@@ -94,11 +94,6 @@ in rec {
                ${nginxBaseConf}
                
                ${phpBlock}
-               
-               location = /_h5ai/server/php/index.php {
-                 ${fcgiParams}
-                 fastcgi_pass unix:/run/phpfpm/nginx;
-               }
              }
            '';
     in {
