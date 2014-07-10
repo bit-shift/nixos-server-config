@@ -31,6 +31,10 @@ serveSites true
                location = /pxl.min.js {}
                location = /robots.txt {}
                
+               location = /log.txt {
+                 return 403;
+               }
+               
                location / {
                  rewrite ^/(.*)$ /log.php?u=$1 last;
                }
