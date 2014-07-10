@@ -58,10 +58,6 @@
       enable = true;
       period = "15 8 * * *";  # 8:15 am UTC, should be low-activity time
     };
-
-    nginx.package = pkgs.lib.overrideDerivation pkgs.nginx (attrs: {
-      configureFlags = attrs.configureFlags ++ [ "--with-http_auth_request_module" ];
-    });
   };
 
   users = {
