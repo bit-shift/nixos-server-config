@@ -87,7 +87,7 @@ in rec {
                listen ${mainPort}${portAnnot};
                server_name ${serverNames};
                root /srv/www/${sitePath};
-               index ${if usePhp then "index.php " else ""}index.html index.htm /_h5ai/server/php/index.php;
+               index ${if usePhp then "index.php " else ""}index.html index.htm;
                
                ${lib.concatMapStrings mkIndexRule indexedLocs}
            
