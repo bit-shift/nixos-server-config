@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 with (import ./simple-nginx.nix { lib = pkgs.stdenv.lib; });
-let retired = hostname : (withPath "retired" (basicSite hostname []));
+let retired = hostname : (withPath "retired" (basicSite hostname [] ""));
 in
 serveSites true
            [ ### bigmacintosh.net
