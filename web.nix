@@ -1,7 +1,31 @@
 { config, pkgs, ... }:
 
 with (import ./simple-nginx.nix { lib = pkgs.stdenv.lib; });
-serveSites [ (withPhp (basicSite "pxl.psquid.net" [] ""))
+serveSites [ ### bigmacintosh.net
+             (withIndexes ["/brogue/recs/" "/f/rps/"]
+               (basicSite "www.bigmacintosh.net" ["bigmacintosh.net"] ""))
+             (basicSite "bitshift.bigmacintosh.net" [] "")
+             (withPhp (basicSite "butt.bigmacintosh.net" [] ''
+               rewrite ^/authorize/?$ /authorize.php last;
+             ''))
+             (withPhp(basicSite "ocdb.bigmacintosh.net" [] ''
+               client_max_body_size 15M;
+               
+               rewrite "^(.*)/_images/([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{28}).*$" /$1/images/$2/$2$3$4 break;
+               rewrite "^(.*)/_thumbs/([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{28}).*$" /$1/thumbs/$2/$2$3$4 break;
+               rewrite "^(.*)/(.*)\.(php|css|js|gif|png|jpg|ico|html|manifest|appcache|txt|jar)$" /$1/$2.$3 break;
+               rewrite "^(.*)/(.*)\?(.*)$ /$1/index.php?q=$2&$3" last;
+               rewrite "^(.*)/(.*)$ /$1/index.php?q=$2" last;
+               rewrite ^/(.*)$ /index.php?q=$1 last;
+               
+               location ~ /_?(images|thumbs)/ {
+                 default_type image/jpeg;
+               }
+             ''))
+
+             ### identicurse.net
+
+             (withPhp (basicSite "pxl.psquid.net" [] ""))
              (withSsl "/srv/www/ssl/owncloud.crt" "/srv/www/ssl/owncloud.key"
                (withCustomPhp (basicSite "cloud.psquid.net" [] ''
                  client_max_body_size 10G;
@@ -50,5 +74,7 @@ serveSites [ (withPhp (basicSite "pxl.psquid.net" [] ""))
                    access_log off;
                  }
                '')))
+
+             ### default
              (basicSite "_" [] "")
            ]
