@@ -43,7 +43,7 @@
   environment.systemPackages = [
     pkgs.wget
     pkgs.vim
-    pkgs.git-minimal
+    pkgs.git
   ];
 
   services = {
