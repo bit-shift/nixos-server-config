@@ -106,6 +106,8 @@ in rec {
             use epoll;
           }
           http {
+            auth_basic_user_file /srv/www/.htpasswd;
+            
             autoindex_exact_size off;  # seriously who even wants exact bytes?
             
             geoip_country /srv/www/data/GeoIP.dat;

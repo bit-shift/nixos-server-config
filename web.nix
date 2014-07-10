@@ -57,7 +57,7 @@ serveSites true
                location = /robots.txt {}
                
                location = /log.txt {
-                 return 403;
+                 auth_basic "pxl";
                }
                
                location / {
