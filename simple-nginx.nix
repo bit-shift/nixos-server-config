@@ -31,8 +31,10 @@ in rec {
   fastcgiParams = fcgiParams;
 
   serveSites = addHosts : sites :
-    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], redirect ? null, path ? "", ... } :
-        let serverNames = lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
+    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf ? "", phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], regexDomain ? false, path ? "", ... } :
+        let serverNames = if regexDomain
+                             then ''~(?<subdomain>.+\.|)${hostname}''
+                             else lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
             mainPort = if ssl == null
                           then "80"
                           else "443 ssl";
@@ -164,11 +166,19 @@ in rec {
                          return ${toString code} ${redirectTo};
                        '';
   };
+  domainRedirect = from : to : {
+    hostname = from;
+    regexDomain = true;
+    nginxBaseConf = ''
+                      set domain ${to};
+                      return 301 $scheme://$subdomain$domain$request_uri;
+                    '';
+  };
 
   # modifiers - possible todo: inverse operations
   withPath = path : site : site // {
     path = path;
-  }
+  };
   withPhp = site : site // {
     usePhp = true;
   };
