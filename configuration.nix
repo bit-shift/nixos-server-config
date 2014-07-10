@@ -55,8 +55,8 @@
     sshd.usePAM = false;
 
     locate = {
-       enable = true;
-       period = "15 8 * * *";  # 8:15 am UTC, should be low-activity time
+      enable = true;
+      period = "15 8 * * *";  # 8:15 am UTC, should be low-activity time
     };
   };
 
