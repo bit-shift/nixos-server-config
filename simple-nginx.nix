@@ -158,7 +158,7 @@ in rec {
     };
   };
   withIndexes = locs : site : site // {
-    indexedLocs = locs
+    indexedLocs = locs;
   };
 
   # convenience functions to avoid parenthitis
