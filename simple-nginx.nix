@@ -31,7 +31,7 @@ in rec {
   fastcgiParams = fcgiParams;
 
   serveSites = addHosts : sites :
-    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf ? "", phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], regexDomain ? false, path ? "", ... } :
+    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf ? "", phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], regexDomain ? false, path ? "", h5ai ? false, ... } :
         let serverNames = if regexDomain
                              then ''~(?<subdomain>.+\.|)${hostname}''
                              else lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
@@ -64,7 +64,7 @@ in rec {
                                     autoindex on;
                                   }
                                 '';
-            phpBlock = let phpRuleInner = if usePhp
+            phpBlock = let phpRuleInner = if (usePhp || h5ai)
                                              then ''
                                                     try_files $uri =404;
                                                     ${fcgiParams}
@@ -87,18 +87,13 @@ in rec {
                listen ${mainPort}${portAnnot};
                server_name ${serverNames};
                root /srv/www/${sitePath};
-               index ${if usePhp then "index.php " else ""}index.html index.htm /_h5ai/server/php/index.php;
+               index ${if usePhp then "index.php " else ""}index.html index.htm${if h5ai then " /_h5ai/server/php/index.php" else ""};
                
                ${lib.concatMapStrings mkIndexRule indexedLocs}
            
                ${nginxBaseConf}
                
                ${phpBlock}
-               
-               location ~ ^/_h5ai/.+\.php$ {
-                 ${fcgiParams}
-                 fastcgi_pass unix:/run/phpfpm/nginx;
-               }
              }
            '';
     in {
@@ -200,6 +195,9 @@ in rec {
   };
   withIndexes = locs : site : site // {
     indexedLocs = locs;
+  };
+  withH5ai = site : site // {
+    h5ai = true;
   };
 
   # convenience functions to avoid parenthitis
