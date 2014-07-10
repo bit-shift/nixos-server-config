@@ -95,7 +95,7 @@ in rec {
                
                ${phpBlock}
                
-               location = /_h5ai/server/php/index.php {
+               location ~ ^/_h5ai/.+\.php$ {
                  ${fcgiParams}
                  fastcgi_pass unix:/run/phpfpm/nginx;
                }
