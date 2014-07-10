@@ -31,7 +31,7 @@ in rec {
   fastcgiParams = fcgiParams;
 
   serveSites = sites :
-    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, ... } :
+    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [] ... } :
         let serverNames = lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
             mainPort = if ssl == null
                           then "80"
@@ -53,6 +53,11 @@ in rec {
                            else ''
                                   ssl_certificate ${ssl.cert};
                                   ssl_certificate_key ${ssl.key};
+                                '';
+            mkIndexRule = loc : ''
+                                  location ${loc} {
+                                    autoindex on;
+                                  }
                                 '';
             phpBlock = let phpRuleInner = if usePhp
                                              then ''
@@ -79,6 +84,8 @@ in rec {
             root /srv/www/${if hostname == "_" then "default" else hostname};
             index ${if usePhp then "index.php " else ""}index.html index.htm;
             
+            ${lib.concatMapStrings mkIndexRule indexedLocs}
+            
             ${phpBlock}
 
             ${nginxBaseConf}
@@ -94,6 +101,8 @@ in rec {
             use epoll;
           }
           http {
+            autoindex_exact_size off;  # seriously who even wants exact bytes?
+
             ${lib.concatMapStrings makeConfig sites}
           }
         '';
@@ -147,6 +156,9 @@ in rec {
       cert = cert;
       key = key;
     };
+  };
+  withIndexes = locs : site : site // {
+    indexedLocs = locs
   };
 
   # convenience functions to avoid parenthitis
