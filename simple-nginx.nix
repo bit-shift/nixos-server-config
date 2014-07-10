@@ -85,10 +85,10 @@ in rec {
                index ${if usePhp then "index.php " else ""}index.html index.htm;
                
                ${lib.concatMapStrings mkIndexRule indexedLocs}
-               
-               ${phpBlock}
            
                ${nginxBaseConf}
+               
+               ${phpBlock}
              }
            '';
     in {
