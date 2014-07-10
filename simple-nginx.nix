@@ -170,7 +170,7 @@ in rec {
     hostname = from;
     regexDomain = true;
     nginxBaseConf = ''
-                      set domain ${to};
+                      set $domain ${to};
                       return 301 $scheme://$subdomain$domain$request_uri;
                     '';
   };
