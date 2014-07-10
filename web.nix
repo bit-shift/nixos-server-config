@@ -32,7 +32,7 @@ serveSites true
                location = /robots.txt {}
                
                location = /log.txt {
-                 auth_request /auth.php;
+                 return 403;
                }
                
                location / {
