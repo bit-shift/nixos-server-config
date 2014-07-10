@@ -1,7 +1,8 @@
 { config, pkgs, ... }:
 
 with (import ./simple-nginx.nix { lib = pkgs.stdenv.lib; });
-serveSites [ ### bigmacintosh.net
+serveSites true
+           [ ### bigmacintosh.net
              (withIndexes ["/brogue/recs/" "/f/rps/"]
                (basicSite "www.bigmacintosh.net" ["bigmacintosh.net"] ""))
              (basicSite "bitshift.bigmacintosh.net" [] "")

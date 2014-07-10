@@ -30,7 +30,7 @@ let fcgiParams = ''
 in rec {
   fastcgiParams = fcgiParams;
 
-  serveSites = sites :
+  serveSites = addHosts : sites :
     let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf, phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], redirect ? null, ... } :
         let serverNames = lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
             mainPort = if ssl == null
@@ -135,6 +135,13 @@ in rec {
         php_admin_flag[log_errors] = on
         php_value[date.timezone] = "UTC";
       '';
+
+      networking.extraHosts = if addHosts
+                              then let serverNames = lib.concatMap (s : lib.singleton s.hostname ++ s.extraHostnames) sites;
+                                   in lib.concatMapStrings (servName: ''
+                                        127.0.0.1	${servName}
+                                      '') sites
+                              else "";
     };
 
   # site types
