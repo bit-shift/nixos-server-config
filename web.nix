@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 
 with (import ./simple-nginx.nix { lib = pkgs.stdenv.lib; });
+let retired = hostname : (withPath "retired" (basicSite hostname []));
+in
 serveSites true
            [ ### bigmacintosh.net
              (withIndexes ["/brogue/recs/" "/f/rps/"]
@@ -36,6 +38,19 @@ serveSites true
              (redirect "issues.identicurse.net" ["bugzilla.identicurse.net"] true
                "https://github.com/identicurse/IdentiCurse/issues")
 
+             ### psquid.eu
+             (domainRedirect "psquid.eu" "psquid.net")
+
+             ### psquid.net
+             (basicSite "dl.psquid.net" [] "")
+             (withIndexes ["/"] (basicSite "dl-public.psquid.net" [] ""))
+             (redirect "node.psquid.net" [] true "http://dl-public.psquid.net$request_uri")
+             (retired "deb.psquid.net")
+             (retired "rpm.psquid.net")
+             (retired "humphrey.psquid.net")
+             (retired "mspa.psquid.net")
+             (retired "pony.psquid.net")
+             (retired "projects.psquid.net")
              (withPhp (basicSite "pxl.psquid.net" [] ''
                location = /favicon.ico {}
                location = /pxl.min.js {}
