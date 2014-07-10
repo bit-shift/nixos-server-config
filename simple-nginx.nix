@@ -145,7 +145,7 @@ in rec {
       '';
 
       networking.extraHosts = if addHosts
-                              then let serverNames = lib.filter (h : h != "_") (lib.concatMap (s : lib.singleton s.hostname ++ s.extraHostnames) sites);
+                              then let serverNames = lib.filter (h : h != "_") (lib.concatMap (s : lib.singleton s.hostname ++ s.extraHostnames or []) sites);
                                    in lib.concatMapStrings (servName: ''
                                         127.0.0.1	${servName}
                                       '') serverNames
