@@ -102,7 +102,10 @@ in rec {
           }
           http {
             autoindex_exact_size off;  # seriously who even wants exact bytes?
-
+            
+            geoip_country /srv/www/data/GeoIP.dat;
+            geoip_city    /srv/www/data/GeoLiteCity.dat;
+            
             ${lib.concatMapStrings makeConfig sites}
           }
         '';

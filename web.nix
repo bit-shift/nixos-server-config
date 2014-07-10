@@ -36,7 +36,7 @@ serveSites true
                }
                
                location / {
-                 rewrite ^/(.*)$ /log.php?u=$1 last;
+                 rewrite ^/(.*)$ /log.php?u=$1&geoip_country_name=$geoip_country_name&geoip_city=$geoip_city last;
                }
              ''))
              (withSsl "/srv/www/ssl/owncloud.crt" "/srv/www/ssl/owncloud.key"
