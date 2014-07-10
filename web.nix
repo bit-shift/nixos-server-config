@@ -25,6 +25,16 @@ serveSites true
              ''))
 
              ### identicurse.net
+             (withIndexes ["/release/"]
+               (basicSite "www.identicurse.net" ["identicurse.net"] ''
+                 location / {
+                   ssi on;
+                   rewrite ^/([^./]+)\.php$ /$1.html last;
+                   rewrite ^/([^./]+)$ /$1.html last;
+                 }
+               ''))
+             (redirect "issues.identicurse.net" ["bugzilla.identicurse.net"] true
+               "https://github.com/identicurse/IdentiCurse/issues")
 
              (withPhp (basicSite "pxl.psquid.net" [] ''
                location = /favicon.ico {}
