@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 
-with (import ./simple-nginx.nix { lib = pkgs.stdenv.lib; });
+with (import ./simple-nginx.nix { pkgs = pkgs; });
 let retired = hostname : (withPath "retired" (basicSite hostname [] ""));
 in
 serveSites true
