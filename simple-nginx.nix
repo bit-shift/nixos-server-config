@@ -112,7 +112,7 @@ in rec {
         pm.max_spare_servers = 20
         pm.max_requests = 500
 
-        php_flag[display_errors] = on
+        php_flag[display_errors] = off
         php_admin_value[error_log] = /run/phpfpm/php-fpm.log
         php_admin_flag[log_errors] = on
         php_value[date.timezone] = "UTC"
