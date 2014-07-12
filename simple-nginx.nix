@@ -161,7 +161,7 @@ in rec {
                   ++ [ "try_files $uri =404;"
                        "${fcgiParams}"
                        "fastcgi_pass unix:/run/phpfpm/nginx;" ];
-    }
+    };
   };
   withCustomPhp = site : site // {  # remove default php loc
     indexes = ["index.php"] ++ site.indexes;
