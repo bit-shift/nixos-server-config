@@ -127,7 +127,7 @@ in rec {
     };
 
   # site types
-  basicSite = hostname : extraHostnames : { pre ? [], post ? [], locs ? {} } : {
+  basicSite = hostname : extraHostnames : { pre ? "", post ? "", locs ? {} } : {
     hostname = hostname;
     extraHostnames = extraHostnames;
     indexes = ["index.html" "index.htm"];
