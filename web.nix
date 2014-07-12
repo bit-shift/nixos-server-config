@@ -22,7 +22,7 @@ serveSites true
                        rewrite "^(.*)/(.*)$ /$1/index.php?q=$2" last;
                        rewrite ^/(.*)$ /index.php?q=$1 last;
                      '';
-               locs."~ /_?(images|thumbs)/" = ''default_type image/jpeg'';
+               locs."~ /_?(images|thumbs)/" = ''default_type image/jpeg;'';
              }))
 
              ### identicurse.net
