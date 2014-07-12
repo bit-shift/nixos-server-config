@@ -3,24 +3,42 @@
 let lib = pkgs.stdenv.lib;
     fcgiParams = "include ${pkgs.nginx}/conf/fastcgi_params;";
 in rec {
+  # Export the "include fastcgi<etc.>" line so the full "pkgs.blah" doesn't
+  # need repeating in configs that use this module.
   fastcgiParams = fcgiParams;
 
+  # Some nice default rules for php blocks if you don't have particular needs.
   phpSimpleRules = [ "try_files $uri =404;"
                      "${fcgiParams}"
                      "fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;"
                      "fastcgi_pass unix:/run/phpfpm/nginx;"
                    ];
 
+  # The meat of simple-nginx, turns a list of sites into an nginx.conf
+  # Entries are added to /etc/hosts for all served hostnames iff addHosts == true,
+  # as a testing helper. Set it to false unless really necessary.
   serveSites = addHosts : sites :
-    let makeConfig = { hostname,
-                       extraHostnames ? [],
-                       regexDomain ? false,
-                       path ? "",
-                       ssl ? null,
-                       indexes ? ["index.html" "index.htm"],
-                       preConf ? [],
-                       locs ? {},
-                       postConf ? [] } :
+        # The meat of the meat! Takes one site, and generates a server{} block or
+        # two for it.
+    let makeConfig = { hostname,  # The main hostname - doubles as the path if 'path'
+                                  # is left as the default ("").
+                       extraHostnames ? [],  # Any other hostnames the site should be
+                                             # served on.
+                       regexDomain ? false,  # Turn the domain into a regex that
+                                             # matches subdomains and stores the 
+                                             # specific subdomain (with dot) to
+                                             # $subdomain?
+                       path ? "",  # The path under /srv/www to use as document root.
+                       ssl ? null,  # The site will be served using SSL with a
+                                    # redirect from :80, using ssl.cert and ssl.key
+                                    # as the certificate and key, iff ssl is non-null.
+                       indexes ? ["index.html" "index.htm"],  # Self-explanatory.
+                       preConf ? [],  # Lines of configuration to insert before auto-
+                                      # generated location{} blocks.
+                       locs ? {},  # Custom location{} blocks, using the key as the
+                                   # location itself, and the value as a list of lines
+                                   # that go in the block.
+                       postConf ? [] } :  # Like preConf, but after locations.
         let serverNames = if regexDomain
                              then ''~(?<subdomain>.+\.|)${hostname}''
                              else lib.concatStringsSep " "
@@ -73,6 +91,8 @@ in rec {
              }
            '';
     in {
+      # Ensure the service is on and using our config (including mime.types
+      # to avoid weirdness).
       services.nginx = {
         enable = true;
         user = "www-data";
@@ -96,6 +116,7 @@ in rec {
         '';
       };
 
+      # Need a www-data user for our services.
       users.extraUsers."www-data" = {
         uid = 33;
         group = "www-data";
@@ -105,6 +126,7 @@ in rec {
       };
       users.extraGroups."www-data".gid = 33;
 
+      # PHP-FPM, including some pool config and php config via that.
       services.phpfpm.poolConfigs.nginx = ''
         listen = /run/phpfpm/nginx
         listen.owner = www-data
@@ -124,6 +146,7 @@ in rec {
         php_value[date.timezone] = "UTC"
       '';
 
+      # Add the extra testing hosts iff addHosts == true.
       networking.extraHosts = if addHosts
                               then let serverNames = lib.filter (h : h != "_") (lib.concatMap (s : lib.singleton s.hostname ++ s.extraHostnames or []) sites);
                                    in lib.concatMapStrings (servName: ''
@@ -132,23 +155,29 @@ in rec {
                               else "";
     };
 
-  # site types
+  ## Site types, preset many values to sane, general defaults.
+  # Bog-standard site, with some nice handling for user-supplied pre/post/locs
+  # configuration, without forcing the internal list approach on them.
   basicSite = hostname : extraHostnames : { pre ? "", post ? "", locs ? {} } : {
     hostname = hostname;
     extraHostnames = extraHostnames;
     indexes = ["index.html" "index.htm"];
     preConf = lib.splitString "\n" pre;
     locs = {
-      "~ \\.php\$" = ["return 403;"];
+      "~ \\.php\$" = ["return 403;"];  # Refuse access to PHP files unless this is
+                                       # removed or outranked by a more specific rule.
     } // lib.mapAttrs (n : v : lib.splitString "\n" v) locs;
     postConf = lib.splitString "\n" post;
   };
+  # A simple redirect, just creates a 301/302 block with the supplied target.
   redirect = hostname : extraHostnames : perm : redirectTo : {
     hostname = hostname;
     extraHostnames = extraHostnames;
     preConf = let code = if perm then 301 else 302;
                     in ["return ${toString code} ${redirectTo};"];
   };
+  # A more interesting redirect, handles switching domains while preserving all
+  # other elements of the URL.
   domainRedirect = from : to : {
     hostname = from;
     regexDomain = true;
@@ -156,10 +185,13 @@ in rec {
                 "return 301 $scheme://$subdomain$domain$request_uri;" ];
   };
 
-  # modifiers - possible todo: inverse operations
+  ## Site modifiers - take an existing site and change specific things.
+  # Serve the site from a different subdirectory of /srv/www
   withPath = path : site : site // {
     path = path;
   };
+  # Add index.php to indexes, and switch out "return 403;" for some rules that
+  # actually handle running PHP.
   withPhp = site : site // {
     indexes = ["index.php"] ++ site.indexes;
     locs = site.locs // {
@@ -167,16 +199,20 @@ in rec {
                   ++ phpSimpleRules;
     };
   };
+  # Add index.php to indexes, but remove the php location block entirely,
+  # so the user-supplied config can supply its own handling for PHP files.
   withCustomPhp = site : site // {  # remove default php loc
     indexes = ["index.php"] ++ site.indexes;
     locs = lib.filterAttrs (n : v : n != "~ \\.php\$") site.locs;
   };
+  # Adds the provided cert and key paths to the site config's ssl config.
   withSsl = cert : key : site : site // {
     ssl = {
       cert = cert;
       key = key;
     };
   };
+  # Enable autoindex for all provided paths.
   withIndexes = ixLocs : site : site // {
     locs = let newLocs = lib.filter (l : ! lib.hasAttr l site.locs) ixLocs;
       in (lib.mapAttrs (loc : rules :
@@ -184,6 +220,7 @@ in rec {
                         site.locs)
          // lib.listToAttrs (map (l : lib.nameValuePair l ["autoindex on;"]) newLocs);
   };
+  # Enable h5ai for a site without enabling PHP globally if it isn't already.
   withH5ai = site : site // {
     indexes = site.indexes ++ ["/_h5ai/server/php/index.php"];
     locs = site.locs // {
