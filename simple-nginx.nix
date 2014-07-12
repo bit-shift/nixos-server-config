@@ -172,8 +172,10 @@ in rec {
     };
   };
   withIndexes = ixLocs : site : site // {
-    locs = lib.mapAttrs (loc : rules :
+    locs = let newLocs = lib.filter (l : ! lib.hasAttr l site.locs) ixLocs;
+      in (lib.mapAttrs (loc : rules :
                           if lib.elem loc ixLocs then rules ++ ["autoindex on;"] else rules)
-                        site.locs;
+                        site.locs)
+         // lib.listToAttrs (map (l : lib.nameValuePair l ["autoindex on;"]) newLocs);
   };
 }
