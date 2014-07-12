@@ -42,7 +42,8 @@ serveSites true
 
              ### psquid.net
              (basicSite "dl.psquid.net" [] {})
-             (withIndexes ["/"] (basicSite "dl-public.psquid.net" [] {}))
+             # (withIndexes ["/"] (basicSite "dl-public.psquid.net" [] {}))
+             (withH5ai (basicSite "dl-public.psquid.net" [] {}))
              (redirect "node.psquid.net" [] true "http://dl-public.psquid.net$request_uri")
              (retired "deb.psquid.net")
              (retired "rpm.psquid.net")

@@ -181,4 +181,10 @@ in rec {
                         site.locs)
          // lib.listToAttrs (map (l : lib.nameValuePair l ["autoindex on;"]) newLocs);
   };
+  withH5ai = site : site // {
+    indexes = site.indexes ++ ["/_h5ai/server/php/index.php"];
+    locs = site.locs // {
+      "~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$");
+    };
+  };
 }
