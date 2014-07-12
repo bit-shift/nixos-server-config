@@ -188,7 +188,7 @@ in rec {
     indexes = site.indexes ++ ["/_h5ai/server/php/index.php"];
     locs = site.locs // {
       # "~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$");
-      "/_h5ai/server/php/index.php" = phpSimpleRules;
+      "= /_h5ai/server/php/index.php" = phpSimpleRules;
     };
   };
 }
