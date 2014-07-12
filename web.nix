@@ -5,7 +5,7 @@ let retired = hostname : (withPath "retired" (basicSite hostname [] {}));
 in
 serveSites false
            [ ### bigmacintosh.net
-             (withIndexes ["/brogue/recs/" "/f/rps/"]
+             (withIndexes ["/brogue/recs/"]
                (basicSite "www.bigmacintosh.net" ["bigmacintosh.net"] {}))
              (basicSite "bitshift.bigmacintosh.net" [] {})
              (withPhp (basicSite "butt.bigmacintosh.net" [] {
