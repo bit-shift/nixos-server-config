@@ -133,7 +133,7 @@ in rec {
     indexes = ["index.html" "index.htm"];
     preConf = lib.splitString "\n" pre;
     locs = {
-      "~ ^.+?\\.php\$" = ["return 403;"];
+      "~ \\.php\$" = ["return 403;"];
     } // lib.mapAttrs (n : v : lib.splitString "\n" v) locs;
     postConf = lib.splitString "\n" post;
   };
@@ -157,7 +157,7 @@ in rec {
   withPhp = site : site // {
     indexes = ["index.php"] ++ site.indexes;
     locs = site.locs // {
-      "~ ^.+?\\.php\$" = (lib.remove "return 403;" site.locs."~ ^.+?\\.php\$")
+      "~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$")
                   ++ [ "try_files $uri =404;"
                        "${fcgiParams}"
                        "fastcgi_pass unix:/run/phpfpm/nginx;" ];
@@ -165,7 +165,7 @@ in rec {
   };
   withCustomPhp = site : site // {  # remove default php loc
     indexes = ["index.php"] ++ site.indexes;
-    locs = lib.filterAttrs (n : v : n != "~ ^.+?\\.php\$") site.locs;
+    locs = lib.filterAttrs (n : v : n != "~ \\.php\$") site.locs;
   };
   withSsl = cert : key : site : site // {
     ssl = {
