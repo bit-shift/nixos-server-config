@@ -156,10 +156,12 @@ in rec {
   };
   withPhp = site : site // {
     indexes = ["index.php"] ++ site.indexes;
-    locs."~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$")
-                     ++ [ "try_files $uri =404;"
-                          "${fcgiParams}"
-                          "fastcgi_pass unix:/run/phpfpm/nginx;" ];
+    locs = site.locs // {
+      "~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$")
+                  ++ [ "try_files $uri =404;"
+                       "${fcgiParams}"
+                       "fastcgi_pass unix:/run/phpfpm/nginx;" ];
+    }
   };
   withCustomPhp = site : site // {  # remove default php loc
     indexes = ["index.php"] ++ site.indexes;
