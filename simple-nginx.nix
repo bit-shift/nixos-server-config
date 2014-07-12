@@ -5,6 +5,12 @@ let lib = pkgs.stdenv.lib;
 in rec {
   fastcgiParams = fcgiParams;
 
+  phpSimpleRules = [ "/_h5ai/server/php/index.php" = [ "try_files $uri =404;"
+                     "${fcgiParams}"
+                     "fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;"
+                     "fastcgi_pass unix:/run/phpfpm/nginx;" ];
+                   ];
+
   serveSites = addHosts : sites :
     let makeConfig = { hostname,
                        extraHostnames ? [],
@@ -158,10 +164,7 @@ in rec {
     indexes = ["index.php"] ++ site.indexes;
     locs = site.locs // {
       "~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$")
-                  ++ [ "try_files $uri =404;"
-                       "${fcgiParams}"
-                       "fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;"
-                       "fastcgi_pass unix:/run/phpfpm/nginx;" ];
+                  ++ phpSimpleRules;
     };
   };
   withCustomPhp = site : site // {  # remove default php loc
@@ -184,7 +187,8 @@ in rec {
   withH5ai = site : site // {
     indexes = site.indexes ++ ["/_h5ai/server/php/index.php"];
     locs = site.locs // {
-      "~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$");
+      # "~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$");
+      "/_h5ai/server/php/index.php" = phpSimpleRules;
     };
   };
 }
