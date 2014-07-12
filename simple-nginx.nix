@@ -221,6 +221,9 @@ in rec {
          // lib.listToAttrs (map (l : lib.nameValuePair l ["autoindex on;"]) newLocs);
   };
   # Enable h5ai for a site without enabling PHP globally if it isn't already.
+  # TODO: Figure out how to actually install h5ai if it's not present. Right now
+  #       it has to be installed in the site directory manually before this
+  #       does anything.
   withH5ai = site : site // {
     indexes = site.indexes ++ ["/_h5ai/server/php/index.php"];
     locs = site.locs // {
