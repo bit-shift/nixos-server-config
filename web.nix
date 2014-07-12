@@ -3,7 +3,7 @@
 with (import ./simple-nginx.nix { pkgs = pkgs; });
 let retired = hostname : (withPath "retired" (basicSite hostname [] {}));
 in
-serveSites true
+serveSites false
            [ ### bigmacintosh.net
              (withIndexes ["/brogue/recs/" "/f/rps/"]
                (basicSite "www.bigmacintosh.net" ["bigmacintosh.net"] {}))
