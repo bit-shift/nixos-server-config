@@ -6,10 +6,19 @@ in rec {
   fastcgiParams = fcgiParams;
 
   serveSites = addHosts : sites :
-    let makeConfig = { hostname, extraHostnames ? [], nginxBaseConf ? "", phpRule ? true, usePhp ? false, ssl ? null, indexedLocs ? [], regexDomain ? false, path ? "", ... } :
+    let makeConfig = { hostname,
+                       extraHostnames ? [],
+                       regexDomain ? false,
+                       path ? "",
+                       ssl ? null,
+                       indexes ? ["index.html" "index.htm"],
+                       preConf ? [],
+                       locs ? {},
+                       postConf ? [] } :
         let serverNames = if regexDomain
                              then ''~(?<subdomain>.+\.|)${hostname}''
-                             else lib.concatStringsSep " " (lib.singleton hostname ++ extraHostnames);
+                             else lib.concatStringsSep " "
+                                    (lib.singleton hostname ++ extraHostnames);
             mainPort = if ssl == null
                           then "80"
                           else "443 ssl";
@@ -34,25 +43,11 @@ in rec {
             sitePath = if path == ""
                           then (if hostname == "_" then "default" else hostname)
                           else path;
-            mkIndexRule = loc : ''
-                                  location ${loc} {
-                                    autoindex on;
-                                  }
-                                '';
-            phpBlock = let phpRuleInner = if usePhp
-                                             then ''
-                                                    try_files $uri =404;
-                                                    ${fcgiParams}
-                                                    fastcgi_pass unix:/run/phpfpm/nginx;
-                                                  ''
-                                             else "return 403;";
-                       in if phpRule
-                          then ''
-                                 location ~ \.php$ {
-                                   ${phpRuleInner}
-                                 }
-                               ''
-                          else "";
+            mkLocation = name : value : ''
+                                          location ${name} {
+                                            ${lib.concatStringsSep "\n" value}
+                                          }
+                                        '';
         in ''
              ${sslRedirect}
              
@@ -62,13 +57,13 @@ in rec {
                listen ${mainPort}${portAnnot};
                server_name ${serverNames};
                root /srv/www/${sitePath};
-               index ${if usePhp then "index.php " else ""}index.html index.htm;
+               index ${lib.concatStringsSep " " indexes};
                
-               ${lib.concatMapStrings mkIndexRule indexedLocs}
-           
-               ${nginxBaseConf}
+               ${lib.concatStringsSep "\n" preConf}
                
-               ${phpBlock}
+               ${lib.concatStringsSep "\n" (lib.mapAttrsToList mkLocation locs)}
+               
+               ${lib.concatStringsSep "\n" postConf}
              }
            '';
     in {
@@ -132,26 +127,27 @@ in rec {
     };
 
   # site types
-  basicSite = hostname : extraHostnames : extraConf : {
+  basicSite = hostname : extraHostnames : { pre ? [], post ? [], locs ? {} } : {
     hostname = hostname;
     extraHostnames = extraHostnames;
-    nginxBaseConf = extraConf;
+    indexes = ["index.html" "index.htm"];
+    preConf = lib.splitString "\n" pre;
+    locs = {
+      "~ \\.php\$" = ["return 403;"];
+    } // lib.mapAttrs (n : v : lib.splitString "\n" v) locs;
+    postConf = lib.splitString "\n" post;
   };
   redirect = hostname : extraHostnames : perm : redirectTo : {
     hostname = hostname;
     extraHostnames = extraHostnames;
-    nginxBaseConf = let code = if perm then 301 else 302;
-                    in ''
-                         return ${toString code} ${redirectTo};
-                       '';
+    preConf = let code = if perm then 301 else 302;
+                    in ["return ${toString code} ${redirectTo};"];
   };
   domainRedirect = from : to : {
     hostname = from;
     regexDomain = true;
-    nginxBaseConf = ''
-                      set $domain ${to};
-                      return 301 $scheme://$subdomain$domain$request_uri;
-                    '';
+    preConf = [ "set $domain ${to};"
+                "return 301 $scheme://$subdomain$domain$request_uri;" ];
   };
 
   # modifiers - possible todo: inverse operations
@@ -159,10 +155,15 @@ in rec {
     path = path;
   };
   withPhp = site : site // {
-    usePhp = true;
+    indexes = ["index.php"] ++ site.indexes;
+    locs."~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$")
+                     ++ [ "try_files $uri =404;"
+                          "${fcgiParams}"
+                          "fastcgi_pass unix:/run/phpfpm/nginx;" ];
   };
-  withoutDefaultPhpRule = site : site // {
-    phpRule = false;
+  withCustomPhp = site : site // {  # remove default php loc
+    indexes = ["index.php"] ++ site.indexes;
+    locs = lib.filterAttrs (n : v : n != "~ \\.php\$") site.locs;
   };
   withSsl = cert : key : site : site // {
     ssl = {
@@ -170,10 +171,9 @@ in rec {
       key = key;
     };
   };
-  withIndexes = locs : site : site // {
-    indexedLocs = locs;
+  withIndexes = ixLocs : site : site // {
+    locs = lib.mapAttrs (loc : rules :
+                          if lib.hasAttr loc ixLocs then rules ++ ["autoindex on;"] else rules)
+                        site.locs;
   };
-
-  # convenience functions to avoid parenthitis
-  withCustomPhp = site : withoutDefaultPhpRule (withPhp site);
 }
