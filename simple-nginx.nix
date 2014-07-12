@@ -173,7 +173,7 @@ in rec {
   };
   withIndexes = ixLocs : site : site // {
     locs = lib.mapAttrs (loc : rules :
-                          if lib.hasAttr loc ixLocs then rules ++ ["autoindex on;"] else rules)
+                          if lib.elem loc ixLocs then rules ++ ["autoindex on;"] else rules)
                         site.locs;
   };
 }
