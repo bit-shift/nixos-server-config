@@ -232,4 +232,9 @@ in rec {
       "= /_h5ai/server/php/index.php" = phpSimpleRules;
     };
   };
+  # Attempt to always serve the exact same path for all requests to the site.
+  singlePage = pagePath : site : site // {
+    indexes = [pagePath] ++ site.indexes;
+    preConf = ["error_page 404 ${pagePath};"] ++ site.preConf;
+  };
 }

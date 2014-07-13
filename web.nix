@@ -1,7 +1,8 @@
 { config, pkgs, ... }:
 
 with (import ./simple-nginx.nix { pkgs = pkgs; });
-let retired = hostname : (withPath "retired" (basicSite hostname [] {}));
+let retired = hostname : (singlePage "/index.html"
+                           (withPath "retired" (basicSite hostname [] {})));
 in
 serveSites false
            [ ### bigmacintosh.net
@@ -108,5 +109,6 @@ serveSites false
                })))
 
              ### default
-             (basicSite "_" [] {})
+             (singlePage "/index.html"
+               (basicSite "_" [] {}))
            ]
