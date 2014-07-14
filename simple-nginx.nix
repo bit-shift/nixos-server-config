@@ -1,4 +1,4 @@
-let pkgs = import <nixpkgs>;
+let pkgs = import <nixpkgs> {};
     lib = pkgs.stdenv.lib;
     fcgiParams = "include ${pkgs.nginx}/conf/fastcgi_params;";
 in rec {
