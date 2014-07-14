@@ -1,5 +1,5 @@
 let pkgs = import <nixpkgs> {};
-    lib = pkgs.stdenv.lib;
+    lib = pkgs.lib;
     fcgiParams = "include ${pkgs.nginx}/conf/fastcgi_params;";
 in rec {
   # Export the "include fastcgi<etc.>" line so the full "pkgs.blah" doesn't
