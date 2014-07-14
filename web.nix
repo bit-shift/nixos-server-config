@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 
-with (import ./simple-nginx.nix { pkgs = pkgs; });
+with import ./simple-nginx.nix;
 let retired = hostname : (singlePage "/retired.html"
                            (withPath "special" (basicSite hostname [] {})));
 in
