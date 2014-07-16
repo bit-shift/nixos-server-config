@@ -71,7 +71,7 @@ in rec {
                               location /control {
                                 auth_basic_user_file ${rtmpSiteHtpasswd};
                                 auth_basic "rtmp live";
-                                rtmp_control live;
+                                rtmp_control all;
                               }
                             }
                           ''
