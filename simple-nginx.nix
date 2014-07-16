@@ -29,7 +29,7 @@ in rec {
                             
                             application live {
                               live on;
-                              on_publish http://${rtmp.hostname}/auth.php;
+                              # on_publish http://${rtmp.hostname}/auth.php;
                             }
                           }
                         }
