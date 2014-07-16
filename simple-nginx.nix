@@ -201,9 +201,9 @@ in rec {
                                       '') serverNames
                               else "";
       networking.firewall.allowedTCPPorts = [ 80 443 ]
-                                         ++ if rtmp.enable
-                                               then [ 1935 ]
-                                               else [];
+                                         ++ (if rtmp.enable
+                                                then [ 1935 ]
+                                                else []);
     };
 
   ## Site types, preset many values to sane, general defaults.
