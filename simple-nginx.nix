@@ -45,6 +45,15 @@ in rec {
                          ${builtins.readFile ./rtmp/index.html}
                          EOF
                        '';
+        rtmpSiteHtpasswd = pkgs.runCommand "rtmp-htpasswd" {
+                             user = rtmp.username;
+                             pass = rtmp.password;
+                             ssl = pkgs.openssl;
+                           } ''
+                               salt="$ssl rand -base64 12"
+                               hash="$(echo -n "$pass$salt" | $ssl dgst -binary -sha1 | sed 's#$#'"$salt"'#' | base64)"
+                               echo "$user:{SSHA}$hash" > $out
+                             '';
         rtmpSiteConf = if rtmp.enable
                           then ''
                             server {
@@ -57,6 +66,12 @@ in rec {
                                 ${fcgiParams}
                                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
                                 fastcgi_pass unix:/run/phpfpm/nginx;
+                              }
+
+                              location /control {
+                                auth_basic_user_file ${rtmpSiteHtpasswd};
+                                auth_basic "rtmp live";
+                                rtmp_control all;
                               }
                             }
                           ''
