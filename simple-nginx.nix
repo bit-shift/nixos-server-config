@@ -39,7 +39,7 @@ in rec {
                          mkdir -p "$out"
                          cd "$out"
                          cat <<'EOF' >auth.php
-                         ${import ./rtmp/auth.php.nix rtmp.user rtmp.pass}
+                         ${import ./rtmp/auth.php.nix rtmp.username rtmp.password}
                          EOF
                          cat <<'EOF' >index.html
                          ${builtins.readFile ./rtmp/index.html}
