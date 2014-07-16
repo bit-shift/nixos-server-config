@@ -13,13 +13,57 @@ in rec {
                      "fastcgi_pass unix:/run/phpfpm/nginx;"
                    ];
 
-  # The meat of simple-nginx, turns a list of sites into an nginx.conf
+  # The meat of simple-nginx, turns our config into a nix config
   # Entries are added to /etc/hosts for all served hostnames iff addHosts == true,
   # as a testing helper. Set it to false unless really necessary.
-  serveSites = addHosts : sites :
-        # The meat of the meat! Takes one site, and generates a server{} block or
-        # two for it.
-    let makeConfig = { hostname,  # The main hostname - doubles as the path if 'path'
+  mkServerConf = { addHosts ? false,
+                   rtmp ? { enable = false; },
+                   sites ? []
+                 } :
+    let rtmpConf = if rtmp.enable
+                      then ''
+                        rtmp {
+                          server {
+                            listen 1935;
+                            chunk_size 4096;
+                            
+                            application live {
+                              live on;
+                              on_publish http://${rtmp.hostname}/auth.php;
+                            }
+                          }
+                        }
+                      ''
+                      else "";
+        rtmpSiteRoot = pkgs.runCommand "rtmp-site" {} ''
+                         mkdir -p "$out"
+                         cd "$out"
+                         cat <<'EOF' >auth.php
+                         ${import ./rtmp/auth.php.nix rtmp.user rtmp.pass}
+                         EOF
+                         cat <<'EOF' >index.html
+                         ${builtins.readFile ./rtmp/index.html}
+                         EOF
+                       '';
+        rtmpSiteConf = if rtmp.enable
+                          then ''
+                            server {
+                              listen 80;
+                              server_name ${rtmp.hostname};
+                              root ${rtmpSiteRoot};
+                              index index.html;
+                              
+                              location /auth.php {
+                                ${fcgiParams}
+                                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                                fastcgi_pass unix:/run/phpfpm/nginx;
+                              }
+                            }
+                          ''
+                          else "";
+    # The meat of the meat! Takes one site, and generates a server{} block or
+    # two for it.
+        makeConfig = { hostname,  # The main hostname - doubles as the path if 'path'
                                   # is left as the default ("").
                        extraHostnames ? [],  # Any other hostnames the site should be
                                              # served on.
@@ -112,6 +156,8 @@ in rec {
             
             ${lib.concatMapStrings makeConfig sites}
           }
+
+          ${rtmpConf}
         '';
       };
 
