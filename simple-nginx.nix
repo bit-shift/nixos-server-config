@@ -153,6 +153,8 @@ in rec {
             
             geoip_country /srv/www/data/GeoIP.dat;
             geoip_city    /srv/www/data/GeoLiteCity.dat;
+
+            ${rtmpSiteConf}
             
             ${lib.concatMapStrings makeConfig sites}
           }
