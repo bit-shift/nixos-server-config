@@ -50,7 +50,7 @@ in rec {
                              pass = rtmp.password;
                              ssl = "${pkgs.openssl}/bin/openssl";
                            } ''
-                               salt="$ssl rand -base64 12"
+                               salt="$($ssl rand -base64 12)"
                                hash="$(echo -n "$pass$salt" | $ssl dgst -binary -sha1 | sed 's#$#'"$salt"'#' | base64 -w 0)"
                                echo "$user:{SSHA}$hash" > $out
                              '';
