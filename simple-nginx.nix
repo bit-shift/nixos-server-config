@@ -48,7 +48,7 @@ in rec {
         rtmpSiteHtpasswd = pkgs.runCommand "rtmp-htpasswd" {
                              user = rtmp.username;
                              pass = rtmp.password;
-                             ssl = pkgs.openssl;
+                             ssl = "${pkgs.openssl}/bin/openssl"
                            } ''
                                salt="$ssl rand -base64 12"
                                hash="$(echo -n "$pass$salt" | $ssl dgst -binary -sha1 | sed 's#$#'"$salt"'#' | base64)"
