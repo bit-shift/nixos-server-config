@@ -118,4 +118,5 @@ mkServerConf {
             ### default
             (singlePage "/nonexistent.html"
               (withPath "special" (basicSite "_" [] {})))
-          ]
+          ];
+}
