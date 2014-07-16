@@ -200,6 +200,10 @@ in rec {
                                         127.0.0.1	${servName}
                                       '') serverNames
                               else "";
+      networking.firewall.allowedTCPPorts = [ 80 443 ]
+                                         ++ if rtmp.enable
+                                               then [ 1935 ]
+                                               else [];
     };
 
   ## Site types, preset many values to sane, general defaults.
