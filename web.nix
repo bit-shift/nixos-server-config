@@ -11,7 +11,7 @@ mkServerConf {
     hostname = "live.psquid.net";
     username = "bitsypon";
     password = builtins.readFile /srv/www/data/rtmp-pass;
-  }
+  };
   sites = [ ### bigmacintosh.net
             (withIndexes ["/brogue/recs/"]
               (basicSite "www.bigmacintosh.net" ["bigmacintosh.net"] {}))
