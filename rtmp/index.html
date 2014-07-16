@@ -3,8 +3,18 @@
 <head>
   <meta charset="utf-8">
   <title>RTMP Stream</title>
+  <script src="http://jwpsrv.com/library/4dnT3gzREeS2pyIACtqXBA.js"></script>
 </head>
 <body>
-  <p>TODO: Actually play the stream here.</p>
+  <div id="bitdoesastream"></div>
+  <script type="text/javascript">
+    jwplayer('bitdoesastream').setup({
+      file: 'rtmp://live.psquid.net/live/flv:bitdoesastream',
+      title: 'Bit Does A Stream',
+      width: '90%',
+      aspectratio: '16:9',
+      autostart: 'true'
+    });
+  </script>
 </body>
 </html>
