@@ -1,14 +1,13 @@
 let pkgs = import <nixpkgs> {};
     lib = pkgs.lib;
-    fcgiParams = "include ${pkgs.nginx}/conf/fastcgi_params;";
 in rec {
   # Export the "include fastcgi<etc.>" line so the full "pkgs.blah" doesn't
   # need repeating in configs that use this module.
-  fastcgiParams = fcgiParams;
+  fastcgiParams =  "include ${pkgs.nginx}/conf/fastcgi_params;";
 
   # Some nice default rules for php blocks if you don't have particular needs.
   phpSimpleRules = [ "try_files $uri =404;"
-                     "${fcgiParams}"
+                     "${fastcgiParams}"
                      "fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;"
                      "fastcgi_pass unix:/run/phpfpm/nginx;"
                    ];
@@ -63,7 +62,7 @@ in rec {
                               index index.html;
                               
                               location /auth.php {
-                                ${fcgiParams}
+                                ${fastcgiParams}
                                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
                                 fastcgi_pass unix:/run/phpfpm/nginx;
                               }
