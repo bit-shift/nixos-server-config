@@ -2,13 +2,13 @@
 
 with import ./simple-nginx.nix;
 let retired = hostname : (singlePage "/retired.html"
-                           (withPath "special" (basicSite hostname [] {})));
+                           (withPath "/srv/www/special" (basicSite hostname [] {})));
 in
 mkServerConf {
   addHosts = false;  # no /etc/hosts modification
   rtmp = {  # switch on rtmp support
     enable = true;
-    hostname = "live.psquid.net";
+    authUrl = "http://live.psquid.net/auth.php";
     username = "bitsypon";
     password = builtins.readFile /srv/www/data/rtmp-pass;
   };
@@ -49,6 +49,16 @@ mkServerConf {
             (domainRedirect "psquid.eu" "psquid.net")
 
             ### psquid.net
+            (basicSite "ws.psquid.net" [] {
+              locs = {
+                "/" = ''
+                        proxy_pass http://127.0.0.1:9080;
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection "upgrade";
+                      '';
+              };
+            })
             (basicSite "dl.psquid.net" [] {})
             # (withIndexes ["/"] (basicSite "dl-public.psquid.net" [] {}))
             (withH5ai (basicSite "dl-public.psquid.net" [] {}))
@@ -117,6 +127,6 @@ mkServerConf {
 
             ### default
             (singlePage "/nonexistent.html"
-              (withPath "special" (basicSite "_" [] {})))
+              (withPath "/srv/www/special" (basicSite "_" [] {})))
           ];
 }
