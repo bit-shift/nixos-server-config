@@ -8,7 +8,7 @@ mkServerConf {
   addHosts = false;  # no /etc/hosts modification
   rtmp = {  # switch on rtmp support
     enable = true;
-    authUrl = "http://live.psquid.net/auth.php";
+    hostname = "live.psquid.net";
     username = "bitsypon";
     password = builtins.readFile /srv/www/data/rtmp-pass;
   };
