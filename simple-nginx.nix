@@ -1,6 +1,5 @@
 let pkgs = import <nixpkgs> {};
-    lib = pkgs.lib;
-in rec {
+in with pkgs.lib; rec {
   # Export the "include fastcgi<etc.>" line so the full "pkgs.blah" doesn't
   # need repeating in configs that use this module.
   fastcgiParams =  "include ${pkgs.nginx}/conf/fastcgi_params;";
@@ -98,8 +97,8 @@ in rec {
                        postConf ? [] } :  # Like preConf, but after locations.
         let serverNames = if regexDomain
                              then ''~(?<subdomain>.+\.|)${hostname}''
-                             else lib.concatStringsSep " "
-                                    (lib.singleton hostname ++ extraHostnames);
+                             else concatStringsSep " "
+                                    (singleton hostname ++ extraHostnames);
             mainPort = if ssl == null
                           then "80"
                           else "443 ssl";
@@ -126,7 +125,7 @@ in rec {
                           else path;
             mkLocation = name : value : ''
                                           location ${name} {
-                                            ${lib.concatStringsSep "\n" value}
+                                            ${concatStringsSep "\n" value}
                                           }
                                         '';
         in ''
@@ -138,13 +137,13 @@ in rec {
                listen ${mainPort}${portAnnot};
                server_name ${serverNames};
                root /srv/www/${sitePath};
-               index ${lib.concatStringsSep " " indexes};
+               index ${concatStringsSep " " indexes};
                
-               ${lib.concatStringsSep "\n" preConf}
+               ${concatStringsSep "\n" preConf}
                
-               ${lib.concatStringsSep "\n" (lib.mapAttrsToList mkLocation locs)}
+               ${concatStringsSep "\n" (mapAttrsToList mkLocation locs)}
                
-               ${lib.concatStringsSep "\n" postConf}
+               ${concatStringsSep "\n" postConf}
              }
            '';
     in {
@@ -170,7 +169,7 @@ in rec {
 
             ${rtmpSiteConf}
             
-            ${lib.concatMapStrings makeConfig sites}
+            ${concatMapStrings makeConfig sites}
           }
 
           ${rtmpConf}
@@ -211,8 +210,8 @@ in rec {
 
       # Add the extra testing hosts iff addHosts == true.
       networking.extraHosts = if addHosts
-                              then let serverNames = lib.filter (h : h != "_") (lib.concatMap (s : lib.singleton s.hostname ++ s.extraHostnames or []) sites);
-                                   in lib.concatMapStrings (servName: ''
+                              then let serverNames = filter (h : h != "_") (concatMap (s : singleton s.hostname ++ s.extraHostnames or []) sites);
+                                   in concatMapStrings (servName: ''
                                         127.0.0.1	${servName}
                                       '') serverNames
                               else "";
@@ -229,12 +228,12 @@ in rec {
     hostname = hostname;
     extraHostnames = extraHostnames;
     indexes = ["index.html" "index.htm"];
-    preConf = lib.splitString "\n" pre;
+    preConf = splitString "\n" pre;
     locs = {
       "~ \\.php\$" = ["return 403;"];  # Refuse access to PHP files unless this is
                                        # removed or outranked by a more specific rule.
-    } // lib.mapAttrs (n : v : lib.splitString "\n" v) locs;
-    postConf = lib.splitString "\n" post;
+    } // mapAttrs (n : v : splitString "\n" v) locs;
+    postConf = splitString "\n" post;
   };
   # A simple redirect, just creates a 301/302 block with the supplied target.
   redirect = hostname : extraHostnames : perm : redirectTo : {
@@ -262,7 +261,7 @@ in rec {
   withPhp = site : site // {
     indexes = ["index.php"] ++ site.indexes;
     locs = site.locs // {
-      "~ \\.php\$" = (lib.remove "return 403;" site.locs."~ \\.php\$")
+      "~ \\.php\$" = (remove "return 403;" site.locs."~ \\.php\$")
                   ++ phpSimpleRules;
     };
   };
@@ -270,7 +269,7 @@ in rec {
   # so the user-supplied config can supply its own handling for PHP files.
   withCustomPhp = site : site // {  # remove default php loc
     indexes = ["index.php"] ++ site.indexes;
-    locs = lib.filterAttrs (n : v : n != "~ \\.php\$") site.locs;
+    locs = filterAttrs (n : v : n != "~ \\.php\$") site.locs;
   };
   # Adds the provided cert and key paths to the site config's ssl config.
   withSsl = cert : key : site : site // {
@@ -281,11 +280,11 @@ in rec {
   };
   # Enable autoindex for all provided paths.
   withIndexes = ixLocs : site : site // {
-    locs = let newLocs = lib.filter (l : ! lib.hasAttr l site.locs) ixLocs;
-      in (lib.mapAttrs (loc : rules :
-                          if lib.elem loc ixLocs then rules ++ ["autoindex on;"] else rules)
+    locs = let newLocs = filter (l : ! hasAttr l site.locs) ixLocs;
+      in (mapAttrs (loc : rules :
+                          if elem loc ixLocs then rules ++ ["autoindex on;"] else rules)
                         site.locs)
-         // lib.listToAttrs (map (l : lib.nameValuePair l ["autoindex on;"]) newLocs);
+         // listToAttrs (map (l : nameValuePair l ["autoindex on;"]) newLocs);
   };
   # Enable h5ai for a site without enabling PHP globally if it isn't already.
   # TODO: Figure out how to actually install h5ai if it's not present. Right now
