@@ -84,7 +84,7 @@ in with pkgs.lib; rec {
                                              # matches subdomains and stores the 
                                              # specific subdomain (with dot) to
                                              # $subdomain?
-                       path ? "",  # The path under /srv/www to use as document root.
+                       path ? "",  # The path to use as document root.
                        ssl ? null,  # The site will be served using SSL with a
                                     # redirect from :80, using ssl.cert and ssl.key
                                     # as the certificate and key, iff ssl is non-null.
@@ -121,7 +121,7 @@ in with pkgs.lib; rec {
                                   ssl_certificate_key ${ssl.key};
                                 '';
             sitePath = if path == ""
-                          then (if hostname == "_" then "default" else hostname)
+                          then "/srv/www/" + (if hostname == "_" then "default" else hostname)
                           else path;
             mkLocation = name : value : ''
                                           location ${name} {
@@ -136,7 +136,7 @@ in with pkgs.lib; rec {
             
                listen ${mainPort}${portAnnot};
                server_name ${serverNames};
-               root /srv/www/${sitePath};
+               root ${sitePath};
                index ${concatStringsSep " " indexes};
                
                ${concatStringsSep "\n" preConf}
