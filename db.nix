@@ -12,5 +12,6 @@
                       EOF
                     '';
     rootPassword  = /srv/www/data/sql-root-pass;
+    package = pkgs.mysql55;
   };
 }
