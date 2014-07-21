@@ -204,6 +204,7 @@ in with pkgs.lib; rec {
         php_admin_value[error_log] = "/run/phpfpm/php-fpm.log"
         php_admin_flag[log_errors] = on
         php_value[date.timezone] = "UTC"
+        php_value[upload_max_filesize] = 10G
 
         env[PATH] = /srv/www/bin:/var/setuid-wrappers:/srv/www/.nix-profile/bin:/srv/www/.nix-profile/sbin:/nix/var/nix/profiles/default/bin:/nix/var/nix/profiles/default/sbin:/run/current-system/sw/bin/run/current-system/sw/sbin
       '';
