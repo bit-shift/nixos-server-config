@@ -63,7 +63,7 @@
     ejabberd = {
       enable = true;
       virtualHosts = [ "bigmacintosh.net" ];
-    }
+    };
   };
 
   users = {
