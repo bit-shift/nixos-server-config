@@ -62,7 +62,7 @@
 
     ejabberd = {
       enable = true;
-      virtualHosts = ''"bigmacintosh.net"'';
+      virtualHosts = ''"bigmacintosh.net","localhost"'';
     };
   };
 
