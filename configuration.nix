@@ -24,7 +24,8 @@
     hostName = "eos";
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 5222 5269 5280 7777 8080 9987 9987 10011 30033 ];
+      allowedTCPPorts = [ 5222 5269 5280 7777 8080 10011 30033 ];
+      allowedUDPPorts = [ 9987 ];
       allowedUDPPortRanges = [ { from = 60000; to = 61000; }  # mosh
                              ];
     };
