@@ -64,6 +64,8 @@
       enable = true;
       virtualHosts = ''"bigmacintosh.net","localhost"'';
     };
+
+    teamspeak3.enable = true;
   };
 
   users = {
