@@ -18,6 +18,8 @@
     };
   };
 
+  nixpkgs.config.allowUnfree = true;
+
   networking = {
     hostName = "eos";
     firewall = {
