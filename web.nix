@@ -125,6 +125,9 @@ mkServerConf {
                 };
               })))
 
+            ### msjessi.ca
+            (basicSite "www.msjessi.ca" ["msjessi.ca"] {})
+
             ### default
             (singlePage "/nonexistent.html"
               (withPath "/srv/www/special" (basicSite "_" [] {})))
