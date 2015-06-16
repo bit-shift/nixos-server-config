@@ -71,6 +71,8 @@
     teamspeak3.enable = true;
   };
 
+  virtualization.docker.enable = true;
+
   users = {
     mutableUsers = false;
     extraUsers = {
