@@ -12,14 +12,8 @@ mkServerConf {
     username = "bitsypon";
     password = builtins.readFile /srv/www/data/rtmp-pass;
   };
-  sites = [ ### bigmacintosh.net
-            (withIndexes ["/brogue/recs/"]
-              (basicSite "www.bigmacintosh.net" ["bigmacintosh.net"] {}))
-            (basicSite "bitshift.bigmacintosh.net" [] {})
-            (withPhp (basicSite "butt.bigmacintosh.net" [] {
-              pre = ''rewrite ^/authorize/?$ /authorize.php last;'';
-            }))
-            (withPhp (basicSite "ocdb.bigmacintosh.net" [] {
+  sites = [ ### kitsun.es
+            (withPhp (basicSite "ocdb.kitsun.es" [] {
               pre = ''
                       client_max_body_size 15M;
                       
