@@ -13,6 +13,13 @@ mkServerConf {
     password = builtins.readFile /srv/www/data/rtmp-pass;
   };
   sites = [ ### kitsun.es
+            (basicSite "www.kitsun.es" ["kitsun.es"] {
+              locs."/" = ''
+                           proxy_set_header  X-Real-IP $remote_addr;
+                           proxy_set_header  Host      $http_host;
+                           proxy_pass        http://127.0.0.1:5280;
+                         '';
+            })
             (withPhp (basicSite "ocdb.kitsun.es" [] {
               pre = ''
                       client_max_body_size 15M;
