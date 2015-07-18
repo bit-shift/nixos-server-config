@@ -33,6 +33,7 @@ mkServerConf {
                     '';
               locs."~ /_?(images|thumbs)/" = ''default_type image/jpeg;'';
             }))
+            (domainRedirect "jess.kitsun.es" "dl.dropboxusercontent.com/u/86596534")
 
             ### identicurse.net
             (withIndexes ["/release/"]
